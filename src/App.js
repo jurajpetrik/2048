@@ -52,27 +52,28 @@ class Board extends Component {
         return;
       }
       if (squares[index] !== 0) {
-        if (squares[index - 1] === squares[index]) {
-          // left has same number, merge
-          squares[index - 1] = squares[index - 1] + squares[index];
-          squares[index] = 0;
-        }
-        if (squares[index - 1] === 0) {
-          const leftMostIndex = 4 * Math.floor(index/4);
+          debugger;
+          const leftMostIndex = 4 * Math.floor(index / 4);
           let currentIndex = index;
-          while(currentIndex-1 >= leftMostIndex) {
-            if (squares[currentIndex-1] === 0) {
-              squares[currentIndex-1] = squares[currentIndex];
+          while (currentIndex - 1 >= leftMostIndex) {
+            if (squares[currentIndex - 1] === 0) {
+              // left is empty, move left
+              squares[currentIndex - 1] = squares[currentIndex];
               squares[currentIndex] = 0;
               currentIndex--;
             }
+            else if (squares[currentIndex - 1] === squares[currentIndex]) {
+              // left has same number, merge, stop moving
+              squares[currentIndex - 1] = squares[currentIndex - 1] + squares[currentIndex];
+              squares[currentIndex] = 0;
+              break;
+            }
             else {
+              // left has different number, stop moving
               break;
             }
           }
         }
-      }
-
     });
     this.setState({squares});
     this.addNewNumber();
