@@ -4,15 +4,12 @@ import './App.css';
 class Board extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      squares: Array(16).fill(0).map(a => {return {value: 0, isNew: false}}),
-      newestSquareIndex: -1
-    };
+    this.state = this.getNewGameState();
   }
 
   renderSquare(index) {
     const square = this.state.squares[index];
-    return square.value===0 ? <EmptySquare /> : <Square value={square.value} isNew={square.isNew} />;
+    return square.value===0 ? <EmptySquare /> : <Square value={square.value} isNew={square.isNew} justMerged={square.justMerged} />;
   }
 
   componentWillMount() {
@@ -61,6 +58,7 @@ class Board extends Component {
           else if (squares[index - 1].value === squares[index].value) {
             // left has same number, merge, stop moving
             squares[index - 1].value = squares[index - 1].value + squares[index].value;
+            squares[index - 1].justMerged = true;
             squares[index].value = 0;
             break;
           }
@@ -165,6 +163,7 @@ class Board extends Component {
   addNewNumber() {
     const emptySquareIndices = this.state.squares.map((square, index) => square.value === 0 ? index : null).filter(x => x !== null);
     if (emptySquareIndices.length === 0) {
+      this.setState({ squares: this.state.squares, gameOver: true});
       return;
     }
     const randomEmptySquareIndex = emptySquareIndices[Math.floor(Math.random() * emptySquareIndices.length)]
@@ -176,11 +175,30 @@ class Board extends Component {
         newSquare.isNew = true;
       }
       else {
+        // these properties only last for one "turn" so clear them here each time
         newSquare.isNew = false;
+        // newSquare.justMerged = false;
       }
       return newSquare;
     });
-    this.setState({squares, newestSquareIndex: randomEmptySquareIndex});
+    this.setState({squares});
+  }
+
+  restartGame() {
+    this.setState(this.getNewGameState());
+  }
+
+  getNewGameState() {
+    return {
+      gameOver: false,
+      squares: Array(16).fill(0).map(a => {
+        return {
+          value: 0,
+          isNew: false,
+          justMerged: false
+        }
+      })
+    }
   }
 
   render() {
@@ -204,6 +222,7 @@ class Board extends Component {
               {this.renderSquare(13)}
               {this.renderSquare(14)}
               {this.renderSquare(15)}
+              <GameOver visible={this.state.gameOver} onClick={this.restartGame.bind(this)} />
           </div>
         </div>
 
@@ -216,7 +235,7 @@ class Board extends Component {
 class Square extends Component {
   render() {
     return (
-      <div className={"square square-"+this.props.value + (this.props.isNew ? " square-new" : "")} >
+      <div className={"square square-"+this.props.value + (this.props.isNew ? " square-new" : "") + (this.props.justMerged ? " square-merged" : "")} >
         { this.props.value }
       </div>
     );
@@ -228,6 +247,16 @@ class EmptySquare extends Component {
     return (
       <div className="square-empty"> </div>
     );
+  }
+}
+
+class GameOver extends Component {
+  render() {
+    return (
+      <div onClick={this.props.onClick} className={"info" + (!this.props.visible ? " hidden" : "")}>
+      Game over, try again
+      </div>
+    )
   }
 }
 
