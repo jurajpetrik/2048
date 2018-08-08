@@ -25,14 +25,48 @@ class Board extends Component {
 
   _handleKeyDown(event) {
     const keys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
-    if (keys.includes(event.key)) {
-      this.addNewNumber();
+    switch(event.key) {
+      case 'ArrowUp':
+        this.addNewNumber();
+        break;
+      case 'ArrowDown':
+        this.addNewNumber();
+        break;
+      case 'ArrowLeft':
+        this.moveLeft();
+        break;
+      case 'ArrowRight':
+        this.addNewNumber();
+        break;
     }
+  }
+
+  moveLeft() {
+    //first row
+    //first  square
+    //second  square
+    const squares = this.state.squares.slice();
+    for (let index of [1, 5, 9, 13]) {
+      if (squares[index] !== 0) {
+        if (squares[index - 1] === 0) {
+          //left is empty, move left
+          squares[index - 1] = squares[index];
+          squares[index] = 0;
+        }
+        if (squares[index - 1] === squares[index]) {
+          // left has same number, merge
+          squares[index - 1] = squares[index - 1] + squares[index];
+          squares[index] = 0;
+        }
+      }
+
+    }
+    this.setState({squares});
+    this.addNewNumber();
   }
 
   addNewNumber() {
     const emptySquareIndices = this.state.squares.map((val, index) => val === 0 ? index : null).filter(x => x !== null);
-    console.log({ emptySquareIndices });
     if (emptySquareIndices.length === 0) {
       console.log('game over');
       return;
