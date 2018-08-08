@@ -5,15 +5,14 @@ class Board extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      squares: Array(15).fill(0).concat([2]),
+      squares: Array(16).fill(0).map(a => {return {value: 0, isNew: false}}),
       newestSquareIndex: -1
     };
   }
 
   renderSquare(index) {
-    const value = this.state.squares[index];
-    const isNew = this.state.newestSquareIndex === index;
-    return value===0 ? <EmptySquare /> : <Square value={value} isNew={isNew} />;
+    const square = this.state.squares[index];
+    return square.value===0 ? <EmptySquare /> : <Square value={square.value} isNew={square.isNew} />;
   }
 
   componentWillMount() {
@@ -29,15 +28,19 @@ class Board extends Component {
     switch(event.key) {
       case 'ArrowUp':
         this.moveUp();
+        this.addNewNumber();
         break;
       case 'ArrowDown':
         this.moveDown();
+        this.addNewNumber();
         break;
       case 'ArrowLeft':
         this.moveLeft();
+        this.addNewNumber();
         break;
       case 'ArrowRight':
         this.moveRight();
+        this.addNewNumber();
         break;
     }
   }
@@ -46,19 +49,19 @@ class Board extends Component {
     const squares = this.state.squares.slice();
     for (let i = 0; i <= 15; i++) {
       let index = i;
-      if (squares[index] !== 0) {
+      if (squares[index].value !== 0) {
         const leftMostIndex = 4 * Math.floor(index / 4);
         while (index - 1 >= leftMostIndex) {
-          if (squares[index - 1] === 0) {
+          if (squares[index - 1].value === 0) {
             // left is empty, move left
-            squares[index - 1] = squares[index];
-            squares[index] = 0;
+            squares[index - 1].value = squares[index].value;
+            squares[index].value = 0;
             index--;
           }
-          else if (squares[index - 1] === squares[index]) {
+          else if (squares[index - 1].value === squares[index].value) {
             // left has same number, merge, stop moving
-            squares[index - 1] = squares[index - 1] + squares[index];
-            squares[index] = 0;
+            squares[index - 1].value = squares[index - 1].value + squares[index].value;
+            squares[index].value = 0;
             break;
           }
           else {
@@ -69,26 +72,25 @@ class Board extends Component {
       }
     }
     this.setState({squares});
-    this.addNewNumber();
   }
 
   moveRight() {
     const squares = this.state.squares.slice();
     for (let i= 15; i>= 0; i--) {
       let index = i;
-      if (squares[index] !== 0) {
+      if (squares[index].value !== 0) {
         const rightMostIndex = 3 + 4 * Math.floor(index / 4);
         while (index + 1 <= rightMostIndex) {
-          if (squares[index + 1] === 0) {
+          if (squares[index + 1].value === 0) {
             // right is empty, move right
-            squares[index + 1] = squares[index];
-            squares[index] = 0;
+            squares[index + 1].value = squares[index].value;
+            squares[index].value = 0;
             index++;
           }
-          else if (squares[index + 1] === squares[index]) {
+          else if (squares[index + 1].value === squares[index].value) {
             // right has same number, merge, stop moving
-            squares[index + 1] = squares[index + 1] + squares[index];
-            squares[index] = 0;
+            squares[index + 1].value = squares[index + 1].value + squares[index].value;
+            squares[index].value = 0;
             break;
           }
           else {
@@ -99,26 +101,25 @@ class Board extends Component {
       }
     }
     this.setState({squares});
-    this.addNewNumber();
   }
 
   moveUp() {
     const squares = this.state.squares.slice();
     for (let i= 0; i<= 15; i++) {
       let index = i;
-      if (squares[index] !== 0) {
+      if (squares[index].value !== 0) {
         const topMostIndex = index % 4;
         while (index - 4 >= topMostIndex) {
-          if (squares[index - 4] === 0) {
+          if (squares[index - 4].value === 0) {
             // up is empty, move up
-            squares[index - 4] = squares[index];
-            squares[index] = 0;
+            squares[index - 4].value = squares[index].value;
+            squares[index].value = 0;
             index -= 4;
           }
-          else if (squares[index - 4] === squares[index]) {
+          else if (squares[index - 4].value === squares[index].value) {
             // up has same number, merge, stop moving
-            squares[index - 4] = squares[index - 4] + squares[index];
-            squares[index] = 0;
+            squares[index - 4].value = squares[index - 4].value + squares[index].value;
+            squares[index].value = 0;
             break;
           }
           else {
@@ -129,26 +130,25 @@ class Board extends Component {
       }
     }
     this.setState({squares});
-    this.addNewNumber();
   }
 
   moveDown() {
     const squares = this.state.squares.slice();
     for (let i= 15; i >= 0; i--) {
       let index = i;
-      if (squares[index] !== 0) {
+      if (squares[index].value !== 0) {
         const bottomMostIndex = 3 * 4 +index % 4;
         while (index + 4 <= bottomMostIndex) {
-          if (squares[index + 4] === 0) {
+          if (squares[index + 4].value === 0) {
             // down is empty, move down
-            squares[index + 4] = squares[index];
-            squares[index] = 0;
+            squares[index + 4].value = squares[index].value;
+            squares[index].value = 0;
             index += 4;
           }
-          else if (squares[index + 4] === squares[index]) {
+          else if (squares[index + 4].value === squares[index].value) {
             // down has same number, merge, stop moving
-            squares[index + 4] = squares[index + 4] + squares[index];
-            squares[index] = 0;
+            squares[index + 4].value = squares[index + 4].value + squares[index].value;
+            squares[index].value = 0;
             break;
           }
           else {
@@ -159,20 +159,27 @@ class Board extends Component {
       }
     }
     this.setState({squares});
-    this.addNewNumber();
   }
 
 
   addNewNumber() {
-    const emptySquareIndices = this.state.squares.map((val, index) => val === 0 ? index : null).filter(x => x !== null);
+    const emptySquareIndices = this.state.squares.map((square, index) => square.value === 0 ? index : null).filter(x => x !== null);
     if (emptySquareIndices.length === 0) {
-      console.log('game over');
       return;
     }
     const randomEmptySquareIndex = emptySquareIndices[Math.floor(Math.random() * emptySquareIndices.length)]
     const newValue = Math.random() < 0.3 ? 4 : 2;
-    const squares = this.state.squares.slice();
-    squares[randomEmptySquareIndex] = newValue;
+    const squares = this.state.squares.map((square,index) => {
+      const newSquare = Object.assign(square, {});
+      if (index === randomEmptySquareIndex) {
+        newSquare.value = newValue;
+        newSquare.isNew = true;
+      }
+      else {
+        newSquare.isNew = false;
+      }
+      return newSquare;
+    });
     this.setState({squares, newestSquareIndex: randomEmptySquareIndex});
   }
 
