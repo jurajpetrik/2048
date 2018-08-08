@@ -102,7 +102,7 @@ class Board extends Component {
 
   moveUp() {
     const squares = this.state.squares.slice();
-    for (let i= 15; i>= 0; i--) {
+    for (let i= 0; i<= 15; i++) {
       let index = i;
       if (squares[index] !== 0) {
         const topMostIndex = index % 4;
@@ -132,7 +132,7 @@ class Board extends Component {
 
   moveDown() {
     const squares = this.state.squares.slice();
-    for (let i= 0; i <= 15; i++) {
+    for (let i= 15; i >= 0; i--) {
       let index = i;
       if (squares[index] !== 0) {
         const bottomMostIndex = 3 * 4 +index % 4;
