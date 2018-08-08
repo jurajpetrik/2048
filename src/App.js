@@ -46,21 +46,34 @@ class Board extends Component {
     //first  square
     //second  square
     const squares = this.state.squares.slice();
-    for (let index of [1, 5, 9, 13]) {
+    squares.forEach((value, index) => {
+      if (index % 4 === 0) {
+        //leftmost square, nowhere to move
+        return;
+      }
       if (squares[index] !== 0) {
-        if (squares[index - 1] === 0) {
-          //left is empty, move left
-          squares[index - 1] = squares[index];
-          squares[index] = 0;
-        }
         if (squares[index - 1] === squares[index]) {
           // left has same number, merge
           squares[index - 1] = squares[index - 1] + squares[index];
           squares[index] = 0;
         }
+        if (squares[index - 1] === 0) {
+          const leftMostIndex = 4 * Math.floor(index/4);
+          let currentIndex = index;
+          while(currentIndex-1 >= leftMostIndex) {
+            if (squares[currentIndex-1] === 0) {
+              squares[currentIndex-1] = squares[currentIndex];
+              squares[currentIndex] = 0;
+              currentIndex--;
+            }
+            else {
+              break;
+            }
+          }
+        }
       }
 
-    }
+    });
     this.setState({squares});
     this.addNewNumber();
   }
@@ -72,8 +85,9 @@ class Board extends Component {
       return;
     }
     const randomEmptySquareIndex = emptySquareIndices[Math.floor(Math.random() * emptySquareIndices.length)]
+    const newValue = Math.random() < 0.3 ? 4 : 2;
     const squares = this.state.squares.slice();
-    squares[randomEmptySquareIndex] = 2;
+    squares[randomEmptySquareIndex] = newValue;
     this.setState({squares});
   }
 
