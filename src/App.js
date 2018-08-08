@@ -5,13 +5,15 @@ class Board extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      squares: Array(15).fill(0).concat([2])
+      squares: Array(15).fill(0).concat([2]),
+      newestSquareIndex: -1
     };
   }
 
   renderSquare(index) {
     const value = this.state.squares[index];
-    return value===0 ? <EmptySquare /> : <Square value={value}/>;
+    const isNew = this.state.newestSquareIndex === index;
+    return value===0 ? <EmptySquare /> : <Square value={value} isNew={isNew} />;
   }
 
   componentWillMount() {
@@ -171,7 +173,7 @@ class Board extends Component {
     const newValue = Math.random() < 0.3 ? 4 : 2;
     const squares = this.state.squares.slice();
     squares[randomEmptySquareIndex] = newValue;
-    this.setState({squares});
+    this.setState({squares, newestSquareIndex: randomEmptySquareIndex});
   }
 
   render() {
@@ -207,7 +209,7 @@ class Board extends Component {
 class Square extends Component {
   render() {
     return (
-      <div className={"square square-"+this.props.value}>
+      <div className={"square square-"+this.props.value + (this.props.isNew ? " square-new" : "")} >
         { this.props.value }
       </div>
     );
