@@ -5,13 +5,42 @@ class Board extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      squares: Array(15).fill(0)
+      squares: Array(15).fill(0).concat([2])
     };
   }
 
   renderSquare(index) {
-    const value = this.state.squares[0];
-    return value==0 ? <EmptySquare /> : <Square value={value}/>;
+    const value = this.state.squares[index];
+    return value===0 ? <EmptySquare /> : <Square value={value}/>;
+  }
+
+  componentWillMount() {
+    document.addEventListener("keydown", this._handleKeyDown.bind(this));
+  }
+
+
+  componentWillUnmount() {
+    document.removeEventListener("keydown", this._handleKeyDown.bind(this));
+  }
+
+  _handleKeyDown(event) {
+    const keys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+    if (keys.includes(event.key)) {
+      this.addNewNumber();
+    }
+  }
+
+  addNewNumber() {
+    const emptySquareIndices = this.state.squares.map((val, index) => val === 0 ? index : null).filter(x => x !== null);
+    console.log({ emptySquareIndices });
+    if (emptySquareIndices.length === 0) {
+      console.log('game over');
+      return;
+    }
+    const randomEmptySquareIndex = emptySquareIndices[Math.floor(Math.random() * emptySquareIndices.length)]
+    const squares = this.state.squares.slice();
+    squares[randomEmptySquareIndex] = 2;
+    this.setState({squares});
   }
 
   render() {
