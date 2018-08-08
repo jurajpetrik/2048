@@ -67,8 +67,27 @@ html {
   float: left;
 }
 
+  .square.square-2 {
+    background: #eee4da;
+  }
+  .square.square-4 {
+    background: #ede0c8;
+  }
+  .square.square-8 {
+    color: #f9f6f2;
+    background: #f2b179;
+  }
+  .square.square-16 {
+    color: #f9f6f2;
+    background: #f59563; }
+  .square.square-32 {
+    color: #f9f6f2;
+    background: #f67c5f; }
+  .square.square-64 {
+    color: #f9f6f2;
+    background: #f65e3b; }
+  .square.square-128 {
+    color: #f9f6f2;
+    background: #edcf72;
+  }
 
-@keyframes App-logo-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
