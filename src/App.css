@@ -46,6 +46,7 @@ html {
 
 
 .square {
+  border-radius: 4px;
   background: #eee4da;
   width: 57.5px;
   height: 57.5px;
@@ -132,7 +133,28 @@ html {
   .square.square-128 {
     color: #f9f6f2;
     background: #edcf72;
+    font-size: 25px;
   }
+  .square.square-256 {
+    color: #f9f6f2;
+    background: #edcc61;
+    font-size: 25px;
+  }
+  .square-512 {
+    color: #f9f6f2;
+    background: #edc850;
+    font-size: 25px;
+  }
+  .tile.tile-1024 {
+    color: #f9f6f2;
+    background: #edc53f;
+    font-size: 25px;
+  }
+  .tile.tile-2048 {
+    color: #f9f6f2;
+    background: #edc22e;
+    font-size: 25px;
+   }
 
   .hidden {
     display: none;

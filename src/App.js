@@ -1,16 +1,33 @@
 import React, { Component } from 'react';
 import './App.css';
+import * as _ from 'lodash';
+
 
 class Board extends Component {
   constructor(props) {
     super(props);
     this.state = this.getNewGameState();
+    this.state = this.addNewNumber(this.state);
+    this.state = this.addNewNumber(this.state);
   }
 
-  renderSquare(index) {
-    const square = this.state.squares[index];
-    return square.value===0 ? <EmptySquare /> : <Square value={square.value} isNew={square.isNew} justMerged={square.justMerged} />;
+  restartGame() {
+    this.setState(this.getNewGameState());
   }
+
+  getNewGameState() {
+    return {
+      gameOver: false,
+      squares: Array(16).fill(0).map(a => {
+        return {
+          value: 0,
+          isNew: false,
+          justMerged: false
+        }
+      })
+    }
+  }
+
 
   componentWillMount() {
     document.addEventListener("keydown", this._handleKeyDown.bind(this));
@@ -22,28 +39,37 @@ class Board extends Component {
   }
 
   _handleKeyDown(event) {
+    let newState = _.cloneDeep(this.state);
+    newState.squares = this.clearOneStepStates(newState.squares);
     switch(event.key) {
       case 'ArrowUp':
-        this.moveUp();
-        this.addNewNumber();
+        newState.squares = this.moveUp(newState.squares);
         break;
       case 'ArrowDown':
-        this.moveDown();
-        this.addNewNumber();
+        newState.squares = this.moveDown(newState.squares);
         break;
       case 'ArrowLeft':
-        this.moveLeft();
-        this.addNewNumber();
+        newState.squares = this.moveLeft(newState.squares);
         break;
       case 'ArrowRight':
-        this.moveRight();
-        this.addNewNumber();
+        newState.squares = this.moveRight(newState.squares);
         break;
     }
+    newState = this.addNewNumber(newState);
+    this.setState(newState);
   }
 
-  moveLeft() {
-    const squares = this.state.squares.slice();
+  clearOneStepStates(squares) {
+    return squares.map(s => {
+      const newSquare = Object.assign({}, s);
+      newSquare.justMerged = false;
+      newSquare.isNew = false;
+      return newSquare;
+    })
+  }
+
+  moveLeft(oldSquares) {
+    const squares = oldSquares.slice();
     for (let i = 0; i <= 15; i++) {
       let index = i;
       if (squares[index].value !== 0) {
@@ -69,11 +95,11 @@ class Board extends Component {
         }
       }
     }
-    this.setState({squares});
+    return squares;
   }
 
-  moveRight() {
-    const squares = this.state.squares.slice();
+  moveRight(oldSquares) {
+    const squares = oldSquares.slice();
     for (let i= 15; i>= 0; i--) {
       let index = i;
       if (squares[index].value !== 0) {
@@ -88,6 +114,7 @@ class Board extends Component {
           else if (squares[index + 1].value === squares[index].value) {
             // right has same number, merge, stop moving
             squares[index + 1].value = squares[index + 1].value + squares[index].value;
+            squares[index + 1].justMerged = true;
             squares[index].value = 0;
             break;
           }
@@ -98,11 +125,11 @@ class Board extends Component {
         }
       }
     }
-    this.setState({squares});
+    return oldSquares;
   }
 
-  moveUp() {
-    const squares = this.state.squares.slice();
+  moveUp(oldSquares) {
+    const squares = oldSquares.slice();
     for (let i= 0; i<= 15; i++) {
       let index = i;
       if (squares[index].value !== 0) {
@@ -117,6 +144,7 @@ class Board extends Component {
           else if (squares[index - 4].value === squares[index].value) {
             // up has same number, merge, stop moving
             squares[index - 4].value = squares[index - 4].value + squares[index].value;
+            squares[index - 4].justMerged = true;
             squares[index].value = 0;
             break;
           }
@@ -127,11 +155,11 @@ class Board extends Component {
         }
       }
     }
-    this.setState({squares});
+    return oldSquares;
   }
 
-  moveDown() {
-    const squares = this.state.squares.slice();
+  moveDown(oldSquares) {
+    const squares = oldSquares.slice();
     for (let i= 15; i >= 0; i--) {
       let index = i;
       if (squares[index].value !== 0) {
@@ -146,6 +174,7 @@ class Board extends Component {
           else if (squares[index + 4].value === squares[index].value) {
             // down has same number, merge, stop moving
             squares[index + 4].value = squares[index + 4].value + squares[index].value;
+            squares[index + 4].justMerged = true;
             squares[index].value = 0;
             break;
           }
@@ -156,49 +185,28 @@ class Board extends Component {
         }
       }
     }
-    this.setState({squares});
+    return oldSquares;
   }
 
 
-  addNewNumber() {
-    const emptySquareIndices = this.state.squares.map((square, index) => square.value === 0 ? index : null).filter(x => x !== null);
+  addNewNumber(state) {
+    const newState = _.cloneDeep(state);
+    const emptySquareIndices = newState.squares.map((square, index) => square.value === 0 ? index : null).filter(x => x !== null);
     if (emptySquareIndices.length === 0) {
-      this.setState({ squares: this.state.squares, gameOver: true});
-      return;
+      newState.gameOver = true;
+      return newState;
     }
     const randomEmptySquareIndex = emptySquareIndices[Math.floor(Math.random() * emptySquareIndices.length)]
     const newValue = Math.random() < 0.3 ? 4 : 2;
-    const squares = this.state.squares.map((square,index) => {
+    newState.squares = newState.squares.map((square,index) => {
       const newSquare = Object.assign(square, {});
       if (index === randomEmptySquareIndex) {
         newSquare.value = newValue;
         newSquare.isNew = true;
       }
-      else {
-        // these properties only last for one "turn" so clear them here each time
-        newSquare.isNew = false;
-        // newSquare.justMerged = false;
-      }
       return newSquare;
     });
-    this.setState({squares});
-  }
-
-  restartGame() {
-    this.setState(this.getNewGameState());
-  }
-
-  getNewGameState() {
-    return {
-      gameOver: false,
-      squares: Array(16).fill(0).map(a => {
-        return {
-          value: 0,
-          isNew: false,
-          justMerged: false
-        }
-      })
-    }
+    return newState;
   }
 
   render() {
@@ -229,6 +237,12 @@ class Board extends Component {
       </div>
     );
   }
+
+  renderSquare(index) {
+    const square = this.state.squares[index];
+    return square.value===0 ? <EmptySquare /> : <Square value={square.value} isNew={square.isNew} justMerged={square.justMerged} />;
+  }
+
 
 }
 
