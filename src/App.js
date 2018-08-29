@@ -2,6 +2,10 @@ import React, { Component } from 'react';
 import './App.css';
 import * as _ from 'lodash';
 
+const LEFT = 'left';
+const RIGHT = 'right';
+const UP = 'up';
+const DOWN = 'down';
 
 class Board extends Component {
   constructor(props) {
@@ -39,27 +43,37 @@ class Board extends Component {
   }
 
   _handleKeyDown(event) {
-    let newState = _.cloneDeep(this.state);
-    newState.squares = this.clearOneStepStates(newState.squares);
+    if ( this.state.gameOver ) { return ; }
+    let direction;
     switch(event.key) {
       case 'ArrowUp':
-        newState.squares = this.moveUp(newState.squares);
+        direction = UP;
         break;
       case 'ArrowDown':
-        newState.squares = this.moveDown(newState.squares);
+        direction = DOWN;
         break;
       case 'ArrowLeft':
-        newState.squares = this.moveLeft(newState.squares);
+        direction = LEFT;
         break;
       case 'ArrowRight':
-        newState.squares = this.moveRight(newState.squares);
+        direction = RIGHT;
         break;
     }
+    let newState = _.cloneDeep(this.state);
+    newState.squares = this.clearOneStepStates(newState.squares);
+    newState.squares = this.move(newState.squares, direction);
     newState = this.addNewNumber(newState);
     this.setState(newState);
   }
 
-  clearOneStepStates(squares) {
+/**
+ * Flags indicating if a square was just merged or was just added are used for CSS animations and should only last one game loop.
+ * This function flips them to negative and is called once each round, just before moving squares
+ * @param {*} squares
+ * @returns
+ * @memberof Board
+ */
+clearOneStepStates(squares) {
     return squares.map(s => {
       const newSquare = Object.assign({}, s);
       newSquare.justMerged = false;
@@ -68,128 +82,13 @@ class Board extends Component {
     })
   }
 
-  moveLeft(oldSquares) {
-    const squares = oldSquares.slice();
-    for (let i = 0; i <= 15; i++) {
-      let index = i;
-      if (squares[index].value !== 0) {
-        const leftMostIndex = 4 * Math.floor(index / 4);
-        while (index - 1 >= leftMostIndex) {
-          if (squares[index - 1].value === 0) {
-            // left is empty, move left
-            squares[index - 1].value = squares[index].value;
-            squares[index].value = 0;
-            index--;
-          }
-          else if (squares[index - 1].value === squares[index].value) {
-            // left has same number, merge, stop moving
-            squares[index - 1].value = squares[index - 1].value + squares[index].value;
-            squares[index - 1].justMerged = true;
-            squares[index].value = 0;
-            break;
-          }
-          else {
-            // left has different number, stop moving
-            break;
-          }
-        }
-      }
-    }
-    return squares;
-  }
-
-  moveRight(oldSquares) {
-    const squares = oldSquares.slice();
-    for (let i= 15; i>= 0; i--) {
-      let index = i;
-      if (squares[index].value !== 0) {
-        const rightMostIndex = 3 + 4 * Math.floor(index / 4);
-        while (index + 1 <= rightMostIndex) {
-          if (squares[index + 1].value === 0) {
-            // right is empty, move right
-            squares[index + 1].value = squares[index].value;
-            squares[index].value = 0;
-            index++;
-          }
-          else if (squares[index + 1].value === squares[index].value) {
-            // right has same number, merge, stop moving
-            squares[index + 1].value = squares[index + 1].value + squares[index].value;
-            squares[index + 1].justMerged = true;
-            squares[index].value = 0;
-            break;
-          }
-          else {
-            // right has different number, stop moving
-            break;
-          }
-        }
-      }
-    }
-    return oldSquares;
-  }
-
-  moveUp(oldSquares) {
-    const squares = oldSquares.slice();
-    for (let i= 0; i<= 15; i++) {
-      let index = i;
-      if (squares[index].value !== 0) {
-        const topMostIndex = index % 4;
-        while (index - 4 >= topMostIndex) {
-          if (squares[index - 4].value === 0) {
-            // up is empty, move up
-            squares[index - 4].value = squares[index].value;
-            squares[index].value = 0;
-            index -= 4;
-          }
-          else if (squares[index - 4].value === squares[index].value) {
-            // up has same number, merge, stop moving
-            squares[index - 4].value = squares[index - 4].value + squares[index].value;
-            squares[index - 4].justMerged = true;
-            squares[index].value = 0;
-            break;
-          }
-          else {
-            // up has different number, stop moving
-            break;
-          }
-        }
-      }
-    }
-    return oldSquares;
-  }
-
-  moveDown(oldSquares) {
-    const squares = oldSquares.slice();
-    for (let i= 15; i >= 0; i--) {
-      let index = i;
-      if (squares[index].value !== 0) {
-        const bottomMostIndex = 3 * 4 +index % 4;
-        while (index + 4 <= bottomMostIndex) {
-          if (squares[index + 4].value === 0) {
-            // down is empty, move down
-            squares[index + 4].value = squares[index].value;
-            squares[index].value = 0;
-            index += 4;
-          }
-          else if (squares[index + 4].value === squares[index].value) {
-            // down has same number, merge, stop moving
-            squares[index + 4].value = squares[index + 4].value + squares[index].value;
-            squares[index + 4].justMerged = true;
-            squares[index].value = 0;
-            break;
-          }
-          else {
-            // down has different number, stop moving
-            break;
-          }
-        }
-      }
-    }
-    return oldSquares;
-  }
-
-
-  addNewNumber(state) {
+/**
+ * Add a new number on a random empty square. If there is no more empty squares, game over
+ *
+ * @param {*} state
+ * @returns
+ */
+addNewNumber(state) {
     const newState = _.cloneDeep(state);
     const emptySquareIndices = newState.squares.map((square, index) => square.value === 0 ? index : null).filter(x => x !== null);
     if (emptySquareIndices.length === 0) {
@@ -208,6 +107,136 @@ class Board extends Component {
     });
     return newState;
   }
+
+/**
+ * Move squares in the desired direction
+ *
+ * @param {*} _squares
+ * @param {*} direction
+ * @returns
+ * @memberof Board
+ */
+move(_squares, direction) {
+    const squares = _squares.slice();
+    const {startIndex, shouldContinue, moveIndex} = this.getIterationObject(direction);
+    for (let i = startIndex; shouldContinue(i); i = moveIndex(i)) {
+      let index = i;
+      let nextIndex = this.getNextIndex(index, direction);
+      if (squares[index].value !== 0) {
+        while (!this.isNextIndexOverEdge(index, direction)) {
+          const currentSquareValue = squares[index].value;
+          const nextSquareValue = squares[nextIndex].value;
+          if (nextSquareValue === 0) {
+            // left is empty, move left
+            this.swapSquares(squares, index, nextIndex);
+            index = nextIndex;
+            nextIndex = this.getNextIndex(index, direction);
+          }
+          else if ( nextSquareValue === currentSquareValue ) {
+            // left has same number, merge, stop moving
+            this.mergeSquares(squares, index, nextIndex);
+            break;
+          }
+          else {
+            // left has different number, stop moving
+            break;
+          }
+        }
+      }
+    }
+    return squares;
+  }
+
+
+/**
+ * @param {String} direction
+ * @returns object with keys startIndex (Number), shouldContinue (function), moveIndex(function) to be used in a for loop
+ */
+getIterationObject(direction) {
+  switch(direction) {
+    case LEFT:
+    case UP:
+     return {
+      startIndex: 0,
+      shouldContinue: i => i <= 15,
+      moveIndex: i => i+1
+    }
+    case RIGHT:
+    case DOWN: return {
+      startIndex: 15,
+      shouldContinue: i => i >= 0,
+      moveIndex: i => i-1
+    }
+    default: throw new Error('Unexpected direction');
+  }
+
+}
+
+/**
+ * given an index and direction, return a boolean indicating if the next index is "over the edge", meaning outside of the column / row in which you are moving
+ *
+ * @param {*} index
+ * @param {*} direction
+ * @returns {Bool}
+ */
+isNextIndexOverEdge(index, direction) {
+  const nextIndex = this.getNextIndex(index, direction);
+  switch(direction) {
+    case LEFT: return nextIndex < (4 * Math.floor(index / 4));
+    case RIGHT: return nextIndex > (3 + 4 * Math.floor(index / 4));
+    case UP: return nextIndex < (index % 4);
+    case DOWN: return nextIndex > (3 * 4 +index % 4);
+    default: throw new Error('Unexpected direction');
+  }
+
+}
+
+/**
+ * given an index and direction, get the next index in that direction. (e.g. moving left you go from 4 -> 3 -> 2 -> 1), moving down you go from (3-7-11-15)
+ *
+ * @param {Number} index
+ * @param {*} direction
+ * @returns {Number}
+ */
+getNextIndex(index, direction) {
+  switch(direction) {
+    case LEFT: return index - 1;
+    case RIGHT: return index + 1;
+    case UP: return index - 4;
+    case DOWN: return index + 4;
+    default: throw new Error('Unexpected direction');
+  }
+}
+/**
+ * Given an array of squares, switch values from fromIndex and toIndex
+ *
+ * @param {Array} squares, gets mutated
+ * @param {*} fromSquareIndex
+ * @param {*} toSquareIndex
+ * @memberof Board
+ */
+swapSquares(squares, fromIndex, toIndex) {
+    const temp = squares[fromIndex];
+    squares[fromIndex] = squares[toIndex];
+    squares[toIndex] = temp;
+  }
+
+/**
+ * Given an array of squares, merge values from fromIndex and toIndex
+ *
+ * @param {Array} squares, gets mutated
+ * @param {*} fromSquareIndex
+ * @param {*} toSquareIndex
+ * @memberof Board
+ */
+  mergeSquares(squares, fromIndex, toIndex) {
+    // left has same number, merge, stop moving
+    squares[toIndex].value = squares[toIndex].value + squares[fromIndex].value;
+    squares[toIndex].justMerged = true;
+    squares[fromIndex].value = 0;
+  }
+
+
 
   render() {
     return (
