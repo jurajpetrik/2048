@@ -58,6 +58,7 @@ class Board extends Component {
       case 'ArrowRight':
         direction = RIGHT;
         break;
+      default: return;
     }
     let newState = _.cloneDeep(this.state);
     newState.squares = this.clearOneStepStates(newState.squares);
