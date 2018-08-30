@@ -89,24 +89,18 @@ clearOneStepStates(squares) {
  * @param {*} state
  * @returns
  */
-addNewNumber(state) {
-    const newState = _.cloneDeep(state);
-    const emptySquareIndices = newState.squares.map((square, index) => square.value === 0 ? index : null).filter(x => x !== null);
+addNewNumber(_state) {
+    const state = _.cloneDeep(_state);
+    const emptySquareIndices = state.squares.map((square, index) => square.value === 0 ? index : null).filter(x => x !== null);
     if (emptySquareIndices.length === 0) {
-      newState.gameOver = true;
-      return newState;
+      state.gameOver = true;
+      return state;
     }
     const randomEmptySquareIndex = emptySquareIndices[Math.floor(Math.random() * emptySquareIndices.length)]
     const newValue = Math.random() < 0.3 ? 4 : 2;
-    newState.squares = newState.squares.map((square,index) => {
-      const newSquare = Object.assign(square, {});
-      if (index === randomEmptySquareIndex) {
-        newSquare.value = newValue;
-        newSquare.isNew = true;
-      }
-      return newSquare;
-    });
-    return newState;
+    state.squares[randomEmptySquareIndex].value = newValue;
+    state.squares[randomEmptySquareIndex].isNew = true;
+    return state;
   }
 
 /**
