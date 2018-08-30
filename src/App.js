@@ -21,7 +21,7 @@ class Board extends Component {
   getNewGameState() {
     let squares = [];
     for (let i=0; i<SIZE*SIZE; i++) {
-      if (Math.random() < 0.7) {
+      if (Math.random() < 0.8) {
         squares.push({ value: 0, isNew: false, justMerged: false})
       }
       else {
@@ -250,9 +250,9 @@ swapSquares(squares, fromIndex, toIndex) {
     );
   }
 
-  renderSquare(index) {
-    const square = this.state.squares[index];
-    return square.value===0 ? <EmptySquare /> : <Square value={square.value} isNew={square.isNew} justMerged={square.justMerged} />;
+  renderSquare(i) {
+    const square = this.state.squares[i];
+    return square.value===0 ? <EmptySquare key={i}/> : <Square value={square.value} isNew={square.isNew} justMerged={square.justMerged} key={i}/>;
   }
 
 
