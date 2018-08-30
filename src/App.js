@@ -6,13 +6,12 @@ const LEFT = 'left';
 const RIGHT = 'right';
 const UP = 'up';
 const DOWN = 'down';
+const SIZE = 4; // size n means nxn square
 
 class Board extends Component {
   constructor(props) {
     super(props);
     this.state = this.getNewGameState();
-    this.state = this.addNewNumber(this.state);
-    this.state = this.addNewNumber(this.state);
   }
 
   restartGame() {
@@ -20,15 +19,19 @@ class Board extends Component {
   }
 
   getNewGameState() {
+    let squares = [];
+    for (let i=0; i<SIZE*SIZE; i++) {
+      if (Math.random() < 0.7) {
+        squares.push({ value: 0, isNew: false, justMerged: false})
+      }
+      else {
+        const value = Math.random() > 0.3 ? 2 : 4;
+        squares.push({ value: value, isNew: true, justMerged: false})
+      }
+    }
     return {
       gameOver: false,
-      squares: Array(16).fill(0).map(a => {
-        return {
-          value: 0,
-          isNew: false,
-          justMerged: false
-        }
-      })
+      squares
     }
   }
 
@@ -153,12 +156,12 @@ getIterationObject(direction) {
     case UP:
      return {
       startIndex: 0,
-      shouldContinue: i => i <= 15,
+      shouldContinue: i => i < SIZE*SIZE,
       moveIndex: i => i+1
     }
     case RIGHT:
     case DOWN: return {
-      startIndex: 15,
+      startIndex: SIZE*SIZE-1,
       shouldContinue: i => i >= 0,
       moveIndex: i => i-1
     }
@@ -177,10 +180,10 @@ getIterationObject(direction) {
 isNextIndexOverEdge(index, direction) {
   const nextIndex = this.getNextIndex(index, direction);
   switch(direction) {
-    case LEFT: return nextIndex < (4 * Math.floor(index / 4));
-    case RIGHT: return nextIndex > (3 + 4 * Math.floor(index / 4));
-    case UP: return nextIndex < (index % 4);
-    case DOWN: return nextIndex > (3 * 4 +index % 4);
+    case LEFT: return nextIndex < (SIZE * Math.floor(index / SIZE));
+    case RIGHT: return nextIndex > ((SIZE - 1) + SIZE * Math.floor(index / SIZE));
+    case UP: return nextIndex < (index % SIZE);
+    case DOWN: return nextIndex > ((SIZE - 1) * SIZE + index % SIZE);
     default: throw new Error('Unexpected direction');
   }
 
@@ -197,8 +200,8 @@ getNextIndex(index, direction) {
   switch(direction) {
     case LEFT: return index - 1;
     case RIGHT: return index + 1;
-    case UP: return index - 4;
-    case DOWN: return index + 4;
+    case UP: return index - SIZE;
+    case DOWN: return index + SIZE;
     default: throw new Error('Unexpected direction');
   }
 }
@@ -238,7 +241,7 @@ swapSquares(squares, fromIndex, toIndex) {
       <div className="App">
         <div className="game-container">
           <div className="grid-container">
-            {[...Array(16).keys()].map(i => this.renderSquare(i))}
+            {[...Array(SIZE * SIZE).keys()].map(i => this.renderSquare(i))}
             <GameOver visible={this.state.gameOver} onClick={this.restartGame.bind(this)} />
           </div>
         </div>
